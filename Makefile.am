@@ -5,11 +5,11 @@ DESTDIR ?= /
 doc_DATA = README.markdown
 docdir = ${prefix}/share/doc/watchman-$(VERSION)
 
-THIRDPARTY_CPPFLAGS = -I$(top_srcdir)/thirdparty/jansson -I$(top_builddir)/thirdparty/jansson
+THIRDPARTY_CPPFLAGS = -I$(top_srcdir)/thirdparty/jansson -I$(top_builddir)/thirdparty/jansson -I$(top_builddir)/thirdparty/wildmatch
 JSON_LIB = -L. libwmanjson.a
 
 watchman_CPPFLAGS = $(THIRDPARTY_CPPFLAGS) @IRONMANCFLAGS@ -DWATCHMAN_STATE_DIR='"@WATCHMAN_STATE_DIR@"'
-watchman_LDADD = $(JSON_LIB)
+watchman_LDADD = $(JSON_LIB) libwildmatch.a
 watchman_SOURCES = \
 	argv.c       \
 	envp.c       \
@@ -60,7 +60,7 @@ noinst_HEADERS =   \
 	watchman.h       \
 	watchman_hash.h
 
-noinst_LIBRARIES = libwmanjson.a libtap.a
+noinst_LIBRARIES = libwmanjson.a libtap.a libwildmatch.a
 
 # bundled json library
 libwmanjson_a_CPPFLAGS = $(THIRDPARTY_CPPFLAGS)
@@ -84,6 +84,9 @@ libwmanjson_a_SOURCES = \
 libtap_a_CPPFLAGS = $(THIRDPARTY_CPPFLAGS)
 libtap_a_SOURCES = thirdparty/tap.c
 TAP_LIB = libtap.a
+
+# pattern matching library
+libwildmatch_a_SOURCES = thirdparty/wildmatch/wildmatch.c
 
 # unit tests
 TESTS = tests/argv.t tests/log.t tests/bser.t
