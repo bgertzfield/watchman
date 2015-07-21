@@ -5,7 +5,7 @@ DESTDIR ?= /
 doc_DATA = README.markdown
 docdir = ${prefix}/share/doc/watchman-$(VERSION)
 
-THIRDPARTY_CPPFLAGS = -I$(top_srcdir)/thirdparty/jansson -I$(top_builddir)/thirdparty/jansson -I$(top_builddir)/thirdparty/wildmatch
+THIRDPARTY_CPPFLAGS = -I$(top_srcdir)/thirdparty/jansson -I$(top_builddir)/thirdparty/jansson
 JSON_LIB = -L. libwmanjson.a
 
 watchman_CPPFLAGS = $(THIRDPARTY_CPPFLAGS) @IRONMANCFLAGS@ -DWATCHMAN_STATE_DIR='"@WATCHMAN_STATE_DIR@"'
@@ -87,10 +87,11 @@ TAP_LIB = libtap.a
 
 # pattern matching library
 libwildmatch_a_SOURCES = thirdparty/wildmatch/wildmatch.c
+WILDMATCH_LIB = libwildmatch.a
 
 # unit tests
-TESTS = tests/argv.t tests/log.t tests/bser.t
-noinst_PROGRAMS = tests/argv.t tests/log.t tests/bser.t
+TESTS = tests/argv.t tests/log.t tests/bser.t tests/wildmatch.t
+noinst_PROGRAMS = tests/argv.t tests/log.t tests/bser.t tests/wildmatch.t
 
 if HAVE_ARC
 # Run lint and output stuff suitable for feeding into ":make" in vim
@@ -174,3 +175,7 @@ tests_bser_t_SOURCES = \
 	tests/bser.c \
 	bser.c
 
+tests_wildmatch_t_CPPFLAGS = $(THIRDPARTY_CPPFLAGS) -DWILDMATCH_TEST_JSON_FILE=\"$(srcdir)/tests/wildmatch_test.json\"
+tests_wildmatch_t_LDADD = $(JSON_LIB) $(TAP_LIB) $(WILDMATCH_LIB)
+tests_wildmatch_t_SOURCES = \
+	tests/wildmatch_test.c
