@@ -83,9 +83,10 @@ static int dowild(const uchar *p, const uchar *text, unsigned int flags)
 			p_ch = tolower(p_ch);
 		switch (p_ch) {
 		case '\\':
-			/* Literal match with following character.  Note that the test
-			 * in "default" handles the p[1] == '\0' failure case. */
-			p_ch = *++p;
+			if (!(flags & WM_NOESCAPE))
+				/* Literal match with following character.  Note that the test
+				 * in "default" handles the p[1] == '\0' failure case. */
+				p_ch = *++p;
 			/* FALLTHROUGH */
 		default:
 			if (t_ch != p_ch)

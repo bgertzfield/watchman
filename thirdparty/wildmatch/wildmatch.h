@@ -7,6 +7,7 @@
 #define WM_CASEFOLD 1
 #define WM_PATHNAME 2
 #define WM_PERIOD 4
+#define WM_NOESCAPE 8
 
 #define WM_ABORT_MALFORMED 2
 #define WM_NOMATCH 1
