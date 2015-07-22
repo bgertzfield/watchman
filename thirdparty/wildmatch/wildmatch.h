@@ -1,9 +1,21 @@
-/* Copyright 1986-present, Rich $alz and Wayne Davison.
+/* Copyright 1986-present, Rich $alz, Wayne Davison, and Duy Nguyen.
  * Licensed under the Apache License, Version 2.0 */
 
-/* wildmatch.h */
+#ifndef WILDMATCH_H
+#define WILDMATCH_H
 
-int wildmatch(const char *pattern, const char *text);
-int iwildmatch(const char *pattern, const char *text);
-int wildmatch_array(const char *pattern, const char*const *texts, int where);
-int litmatch_array(const char *string, const char*const *texts, int where);
+#define WM_CASEFOLD 1
+#define WM_PATHNAME 2
+
+#define WM_ABORT_MALFORMED 2
+#define WM_NOMATCH 1
+#define WM_MATCH 0
+#define WM_ABORT_ALL -1
+#define WM_ABORT_TO_STARSTAR -2
+
+struct wildopts;
+
+int wildmatch(const char *pattern, const char *text,
+              unsigned int flags,
+              struct wildopts *wo);
+#endif

@@ -13,6 +13,7 @@
 static void run_test(json_t *test_case_data)
 {
   int wildmatch_should_succeed;
+  int wildmatch_flags;
   char *text_to_match;
   char *pattern_to_use;
 
@@ -21,8 +22,9 @@ static void run_test(json_t *test_case_data)
         test_case_data,
         &error,
         0,
-        "[b,s,s]",
+        "[b,i,s,s]",
         &wildmatch_should_succeed,
+        &wildmatch_flags,
         &text_to_match,
         &pattern_to_use) == -1) {
     fail(
@@ -34,15 +36,22 @@ static void run_test(json_t *test_case_data)
     return;
   }
 
-  int wildmatch_succeeded = wildmatch(pattern_to_use, text_to_match) == 1;
+  int wildmatch_succeeded =
+    wildmatch(pattern_to_use, text_to_match, wildmatch_flags, 0) == WM_MATCH;
   if (wildmatch_should_succeed) {
     ok(
       wildmatch_succeeded,
-      "Pattern [%s] should match text [%s]", pattern_to_use, text_to_match);
+      "Pattern [%s] should match text [%s] with flags %d",
+      pattern_to_use,
+      text_to_match,
+      wildmatch_flags);
   } else {
     ok(
       !wildmatch_succeeded,
-      "Pattern [%s] should not match text [%s]", pattern_to_use, text_to_match);
+      "Pattern [%s] should not match text [%s] with flags %d",
+      pattern_to_use,
+      text_to_match,
+      wildmatch_flags);
   }
 }
 

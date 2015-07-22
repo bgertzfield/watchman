@@ -33,11 +33,12 @@ static bool eval_match(struct w_query_ctx *ctx,
   }
 
   if (match->wildmatch) {
-    if (match->caseless) {
-      return iwildmatch(match->pattern, str->buf) == 1;
-    } else {
-      return wildmatch(match->pattern, str->buf) == 1;
-    }
+    return wildmatch(
+      match->pattern,
+      str->buf,
+      (match->pathname ? WM_PATHNAME : 0) |
+      (match->caseless ? WM_CASEFOLD : 0),
+      0) == WM_MATCH;
   } else {
     return fnmatch(match->pattern,
         str->buf,
