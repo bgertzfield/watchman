@@ -36,6 +36,7 @@ static bool eval_match(struct w_query_ctx *ctx,
     return wildmatch(
       match->pattern,
       str->buf,
+      (match->period ? WM_PERIOD : 0) |
       (match->pathname ? WM_PATHNAME : 0) |
       (match->caseless ? WM_CASEFOLD : 0),
       0) == WM_MATCH;

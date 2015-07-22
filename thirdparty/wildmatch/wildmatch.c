@@ -69,6 +69,9 @@ static int dowild(const uchar *p, const uchar *text, unsigned int flags)
 	uchar p_ch;
 	const uchar *pattern = p;
 
+	int pattern_needs_leading_period =
+		(flags & WM_PERIOD) && (text[0] == '.');
+
 	for ( ; (p_ch = *p) != '\0'; text++, p++) {
 		int matched, match_slash, negated;
 		uchar t_ch, prev_ch;
@@ -87,6 +90,12 @@ static int dowild(const uchar *p, const uchar *text, unsigned int flags)
 		default:
 			if (t_ch != p_ch)
 				return WM_NOMATCH;
+			if ((flags & WM_PERIOD) &&
+			    (flags & WM_PATHNAME) && t_ch == '/' &&
+			    text[1] == '.' && p[1] != '.')
+				return WM_NOMATCH;
+			/* If we needed a leading period, we've matched it. */
+			pattern_needs_leading_period = 0;
 			continue;
 		case '?':
 			/* Match anything but '/'. */
@@ -122,10 +131,17 @@ static int dowild(const uchar *p, const uchar *text, unsigned int flags)
 				/* without WM_PATHNAME, '*' == '**' */
 				match_slash = flags & WM_PATHNAME ? 0 : 1;
 			if (*p == '\0') {
+				/* If we needed a leading period in the pattern but only
+				 * found stars, we didn't match. */
+				if (pattern_needs_leading_period)
+					return WM_NOMATCH;
 				/* Trailing "**" matches everything.  Trailing "*" matches
 				 * only if there are no more slash characters. */
 				if (!match_slash) {
 					if (strchr((char*)text, '/') != NULL)
+						return WM_NOMATCH;
+					if ((flags & WM_PERIOD) &&
+					    strstr((const char*)text, "/.") != NULL)
 						return WM_NOMATCH;
 				}
 				return WM_MATCH;
@@ -168,11 +184,17 @@ static int dowild(const uchar *p, const uchar *text, unsigned int flags)
 					if (t_ch != p_ch)
 						return WM_NOMATCH;
 				}
+				if (pattern_needs_leading_period)
+					return WM_NOMATCH;
 				if ((matched = dowild(p, text, flags)) != WM_NOMATCH) {
 					if (!match_slash || matched != WM_ABORT_TO_STARSTAR)
 						return matched;
 				} else if (!match_slash && t_ch == '/')
 					return WM_ABORT_TO_STARSTAR;
+				else if ((flags & WM_PERIOD) &&
+					 (flags & WM_PATHNAME) && t_ch == '/' &&
+					 text[1] == '.' && p[1] != '.')
+					return WM_NOMATCH;
 				t_ch = *++text;
 			}
 			return WM_ABORT_ALL;
@@ -275,6 +297,9 @@ static int dowild(const uchar *p, const uchar *text, unsigned int flags)
 			} while (prev_ch = p_ch, (p_ch = *++p) != ']');
 			if (matched == negated ||
 			    ((flags & WM_PATHNAME) && t_ch == '/'))
+				return WM_NOMATCH;
+			if ((flags & WM_PATHNAME) && t_ch == '/' &&
+			    (flags & WM_PERIOD) && (text[1] == '.') && (p[1] != '.'))
 				return WM_NOMATCH;
 			continue;
 		}
